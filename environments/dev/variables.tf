@@ -33,9 +33,16 @@ variable "image_expiration_days" {
   default = 7
 }
 
-variable "image_uri" {
-  description = "Lambda container image URI on ECR"
+variable "ecr_max_image_count" {
+  description = "Maximum number of images to keep in ECR"
+  type        = number
+  default     = 5
+}
+
+variable "image_tag" {
+  description = "ECR image tag"
   type        = string
+  default     = "latest"
 }
 
 variable "lambda_timeout" {

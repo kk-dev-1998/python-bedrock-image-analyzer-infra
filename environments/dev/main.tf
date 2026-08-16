@@ -20,6 +20,13 @@ locals {
   ]
 }
 
+module "ecr" {
+  source = "../../modules/ecr"
+
+  repository_name = var.project_name
+  max_image_count = var.ecr_max_image_count
+}
+
 module "s3_images" {
   source = "../../modules/s3"
 
@@ -45,7 +52,7 @@ module "lambda" {
   project_name    = var.project_name
   environment     = var.environment
   lambda_role_arn = module.iam.lambda_role_arn
-  image_uri       = var.image_uri
+  image_uri       = "${module.ecr.repository_url}:${var.image_tag}"
   timeout         = var.lambda_timeout
   memory_size     = var.lambda_memory_size
 
