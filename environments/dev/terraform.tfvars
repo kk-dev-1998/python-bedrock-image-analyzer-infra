@@ -15,9 +15,6 @@ bedrock_foundation_model_arns = [
 image_bucket_name     = "image-analysis-api-images-79cb9012"
 image_expiration_days = 7
 
-# TODO: replace with the image URI already pushed to ECR
-image_uri = "TODO-ecr-image-uri"
-
 lambda_timeout     = 30
 lambda_memory_size = 512
 lambda_environment_variables = {
