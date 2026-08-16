@@ -1,6 +1,7 @@
 # python-bedrock-image-analyzer-infra
 
 Terraform-managed AWS infrastructure for [python-bedrock-image-analyzer](https://github.com/kk-dev-1998/python-bedrock-image-analyzer).
+
 [python-bedrock-image-analyzer](https://github.com/kk-dev-1998/python-bedrock-image-analyzer) のAWSインフラをTerraformで管理するリポジトリです。
 
 ## Architecture
@@ -97,4 +98,4 @@ Step 2 exists to break a chicken-and-egg problem — Lambda's Terraform config r
   GitHub Actions（OIDC認証）による`fmt`→`plan`→`apply`の自動化
 - CI integration for tflint / checkov
   tflint / checkovのCI組み込み
->>>>>>> feature/initial-implementation
+  
