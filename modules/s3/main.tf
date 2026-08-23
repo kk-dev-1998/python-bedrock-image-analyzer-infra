@@ -32,9 +32,9 @@ resource "aws_s3_bucket_cors_configuration" "images" {
 
   cors_rule {
     allowed_methods = ["PUT"]
-    allowed_origins  = var.cors_allowed_origins
-    allowed_headers  = ["*"]
-    max_age_seconds  = 3000
+    allowed_origins = var.cors_allowed_origins
+    allowed_headers = ["*"]
+    max_age_seconds = 3000
   }
 }
 

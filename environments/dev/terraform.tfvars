@@ -20,3 +20,5 @@ lambda_memory_size = 512
 lambda_environment_variables = {
   LOG_LEVEL = "INFO"
 }
+
+tfstate_bucket_name = "image-analysis-api-tfstate-f28ff5c3"
