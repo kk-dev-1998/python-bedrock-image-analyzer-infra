@@ -38,11 +38,19 @@ data "aws_iam_policy_document" "github_actions_assume" {
       values   = ["sts.amazonaws.com"]
     }
 
-    # Only allow runs from this repository (all branches/PRs).
+    # AWS requires GitHub Actions OIDC trust policies to be scoped via either the
+    # sub or job_workflow_ref claim, so we keep sub as a wildcard here and do the
+    # actual scoping with the more robust repository claim below.
     condition {
       test     = "StringLike"
       variable = "token.actions.githubusercontent.com:sub"
-      values   = ["repo:${var.github_org}/${var.github_repo}:*"]
+      values   = ["repo:*"]
+    }
+
+    condition {
+      test     = "StringEquals"
+      variable = "token.actions.githubusercontent.com:repository"
+      values   = ["${var.github_org}/${var.github_repo}"]
     }
   }
 }
