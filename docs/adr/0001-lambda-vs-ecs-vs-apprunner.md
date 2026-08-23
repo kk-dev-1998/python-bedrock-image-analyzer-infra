@@ -1,7 +1,3 @@
-以下をそのまま`docs/adr/0001-lambda-vs-ecs-vs-apprunner.md`にコピペしてください。
-
----
-
 # ADR 0001: Compute platform for the image analysis API — Lambda vs ECS Fargate vs App Runner
 
 コンピュートプラットフォームの選定：Lambda vs ECS Fargate vs App Runner
