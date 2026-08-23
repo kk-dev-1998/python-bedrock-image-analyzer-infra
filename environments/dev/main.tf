@@ -5,6 +5,11 @@ terraform {
       source  = "hashicorp/aws"
       version = "~> 5.0"
     }
+
+    tls = {
+      source  = "hashicorp/tls"
+      version = "~> 4.0"
+    }
   }
 }
 
@@ -18,6 +23,17 @@ locals {
   bedrock_inference_profile_arns = [
     "arn:aws:bedrock:${var.aws_region}:${data.aws_caller_identity.current.account_id}:inference-profile/${var.bedrock_inference_profile_id}"
   ]
+}
+
+module "github_oidc" {
+  source = "../../modules/github-oidc"
+
+  github_org          = "kk-dev-1998"
+  github_repo         = "python-bedrock-image-analyzer-infra"
+  project_name        = var.project_name
+  aws_region          = var.aws_region
+  account_id          = data.aws_caller_identity.current.account_id
+  tfstate_bucket_name = var.tfstate_bucket_name
 }
 
 module "ecr" {
