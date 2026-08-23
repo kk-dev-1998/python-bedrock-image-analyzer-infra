@@ -68,6 +68,7 @@ data "aws_iam_policy_document" "github_actions_permissions" {
     actions = [
       "s3:GetObject",
       "s3:PutObject",
+      "s3:DeleteObject",
       "s3:ListBucket",
     ]
     resources = [
@@ -150,7 +151,9 @@ data "aws_iam_policy_document" "github_actions_permissions" {
     ]
     resources = [
       "arn:aws:logs:${var.aws_region}:${var.account_id}:log-group:/aws/lambda/${var.project_name}-*",
+      "arn:aws:logs:${var.aws_region}:${var.account_id}:log-group:/aws/lambda/${var.project_name}-*:*",
       "arn:aws:logs:${var.aws_region}:${var.account_id}:log-group:/aws/apigateway/${var.project_name}-*",
+      "arn:aws:logs:${var.aws_region}:${var.account_id}:log-group:/aws/apigateway/${var.project_name}-*:*",
     ]
   }
 
@@ -161,6 +164,15 @@ data "aws_iam_policy_document" "github_actions_permissions" {
       "sts:GetCallerIdentity",
     ]
     resources = ["*"]
+  }
+
+  statement {
+    sid    = "IAMOIDCProvider"
+    effect = "Allow"
+    actions = [
+      "iam:GetOpenIDConnectProvider",
+    ]
+    resources = ["arn:aws:iam::${var.account_id}:oidc-provider/token.actions.githubusercontent.com"]
   }
 }
 
