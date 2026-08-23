@@ -59,3 +59,8 @@ variable "lambda_environment_variables" {
   type    = map(string)
   default = {}
 }
+
+variable "tfstate_bucket_name" {
+  description = "S3 bucket name for storing Terraform state"
+  type        = string
+}

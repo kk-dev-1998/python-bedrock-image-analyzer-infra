@@ -7,3 +7,7 @@ output "api_endpoint" {
   description = "API Gateway endpoint"
   value       = try(module.apigateway.api_endpoint, null)
 }
+
+output "github_actions_role_arn" {
+  value = module.github_oidc.role_arn
+}
