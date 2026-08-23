@@ -20,7 +20,7 @@ S3経由のpresigned URLアップロード方式は設計・IAM権限のみ用�
 
 ## Tech Stack
 
-- Terraform 1.7+ / AWS Provider ~> 5.0
+- Terraform 1.10+ (required for S3 native state locking) / AWS Provider ~> 5.0
 - AWS Lambda (container image) / API Gateway (HTTP API) / ECR / S3 / Amazon Bedrock
 - tfstate management: S3 (native locking)
 
@@ -34,9 +34,14 @@ terraform/
 │   ├── iam/               # Lambda execution role (least privilege: Bedrock JP inference profile + S3)
 │   ├── lambda/             # Lambda function (container image)
 │   ├── apigateway/         # HTTP API (API Gateway v2) + Lambda proxy integration
-│   └── s3/                 # S3 bucket for image uploads (private, encrypted, auto-expiring)
-└── environments/
-    └── dev/                # Deployment environment (designed for multi-env via tfvars; only dev is actually built)
+│   ├── s3/                 # S3 bucket for image uploads (private, encrypted, auto-expiring)
+│   └── github-oidc/        # OIDC provider + IAM role for GitHub Actions (no long-lived AWS keys)
+├── environments/
+│   └── dev/                # Deployment environment (designed for multi-env via tfvars; only dev is actually built)
+├── .github/
+│   └── workflows/          # CI: terraform fmt / plan / apply via OIDC
+└── docs/
+    └── adr/                 # Architecture Decision Records
 ```
 
 Each AWS service has its own module (single responsibility), so components can be swapped or reused independently — e.g. Lambda could later be replaced with ECS without touching IAM or S3.
@@ -88,14 +93,34 @@ Step 2 exists to break a chicken-and-egg problem — Lambda's Terraform config r
 
   `terraform.tfvars`にAWSアカウントIDを直書きしていません。`data "aws_caller_identity"`と`module.ecr.repository_url`を使い、実行時に自動解決する設計にすることで、Gitの履歴に機微な情報が残らないようにしています。
 
-- Lambda vs ECS/App Runner comparison: see [ADR](リンク) (coming soon / 準備中)
+- **CI/CD via OIDC, not long-lived keys**: GitHub Actions assumes an AWS IAM role via OIDC (short-lived credentials per run) instead of storing AWS access keys as GitHub Secrets. The trust policy is scoped by the `repository` claim (an exact match), rather than the `sub` claim wildcard pattern commonly shown in tutorials — GitHub started embedding numeric owner/repo IDs into `sub` in late 2024, which breaks simple wildcard patterns.
+
+  GitHub ActionsはAWSアクセスキーをSecretsに保存せず、OIDC経由で短命な一時クレデンシャルを都度発行する方式にしています。信頼ポリシーは、チュートリアルでよく見る`sub`クレームのワイルドカードパターンではなく、`repository`クレーム（完全一致）でスコープしています。GitHubが2024年後半以降、`sub`にオーナー/リポジトリの数値IDを埋め込むようになり、単純なワイルドカードパターンでは意図通りに一致しなくなったためです。
+
+- Lambda vs ECS/App Runner comparison: see [ADR 0001](docs/adr/0001-lambda-vs-ecs-vs-apprunner.md)
+
+  Lambda vs ECS/App Runnerの比較検討は[ADR 0001](docs/adr/0001-lambda-vs-ecs-vs-apprunner.md)を参照
+
+## CI/CD
+
+GitHub Actions (`.github/workflows/terraform.yml`) runs on every pull request and on push to `main`.
+
+- **Pull request**: `terraform fmt -check` + `terraform plan`, with the plan output posted as a PR comment.
+- **Push to `main`**: `terraform apply` runs automatically.
+
+Authentication uses OIDC — no AWS access keys are stored in GitHub. The GitHub Actions IAM role (`modules/github-oidc`) has minimal permissions scoped to this project's specific resources (by service, further scoped by resource ARN prefix), not full account access.
+
+GitHub ActionsはPRごと、および`main`へのpush時に実行されます。
+
+- **プルリクエスト時**：`terraform fmt -check` + `terraform plan`を実行し、結果をPRにコメントとして投稿
+- **`main`へのpush時**：`terraform apply`を自動実行
+
+認証はOIDCを使用しており、GitHub上にAWSアクセスキーを一切保存していません。GitHub Actions用のIAMロール（`modules/github-oidc`）は、アカウント全体への権限ではなく、本プロジェクトの対象リソースに限定した最小権限で構成しています。
 
 ## Future Work
 
 - Implement S3 presigned URL upload flow (IAM permissions and CORS are already in place)
   S3経由のpresigned URLアップロード方式の実装（IAM権限・CORS設定は用意済み）
-- GitHub Actions (OIDC auth) for automated `fmt` → `plan` → `apply`
-  GitHub Actions（OIDC認証）による`fmt`→`plan`→`apply`の自動化
 - CI integration for tflint / checkov
   tflint / checkovのCI組み込み
   
