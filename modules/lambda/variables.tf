@@ -36,6 +36,6 @@ variable "log_retention_days" {
 }
 
 variable "reserved_concurrent_executions" {
-  type = number
-  default = 5  
+  type    = number
+  default = 5
 }
