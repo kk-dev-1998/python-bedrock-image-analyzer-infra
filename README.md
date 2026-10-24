@@ -105,22 +105,21 @@ Step 2 exists to break a chicken-and-egg problem — Lambda's Terraform config r
 
 GitHub Actions (`.github/workflows/terraform.yml`) runs on every pull request and on push to `main`.
 
-- **Pull request**: `terraform fmt -check` + `terraform plan`, with the plan output posted as a PR comment.
-- **Push to `main`**: `terraform apply` runs automatically.
+- **Pull request**: `tflint` + `checkov` run first; `terraform fmt -check` + `terraform plan` follow, with the plan output posted as a PR comment.
+- **Push to `main`**: after `tflint` and `checkov` pass, `terraform apply` runs automatically.
+- **checkov exceptions**: findings that are intentionally accepted are skipped with an inline `#checkov:skip=<ID>:<reason>` comment on the resource, so every exception and its reason is visible in the code.
 
 Authentication uses OIDC — no AWS access keys are stored in GitHub. The GitHub Actions IAM role (`modules/github-oidc`) has minimal permissions scoped to this project's specific resources (by service, further scoped by resource ARN prefix), not full account access.
 
 GitHub ActionsはPRごと、および`main`へのpush時に実行されます。
 
-- **プルリクエスト時**：`terraform fmt -check` + `terraform plan`を実行し、結果をPRにコメントとして投稿
-- **`main`へのpush時**：`terraform apply`を自動実行
+- **プルリクエスト時**：`tflint`と`checkov`を実行したうえで、`terraform fmt -check` + `terraform plan`を実行し、結果をPRにコメントとして投稿
+- **`main`へのpush時**：`tflint`と`checkov`が通った後に`terraform apply`を自動実行
+- **checkovの例外**：意図的に許容する指摘は、対象リソースに`#checkov:skip=<ID>:<理由>`のコメントを付けてスキップしています。例外とその理由はコード上で確認できます。
 
 認証はOIDCを使用しており、GitHub上にAWSアクセスキーを一切保存していません。GitHub Actions用のIAMロール（`modules/github-oidc`）は、アカウント全体への権限ではなく、本プロジェクトの対象リソースに限定した最小権限で構成しています。
 
 ## Future Work
 
 - Implement S3 presigned URL upload flow (IAM permissions and CORS are already in place)
-  S3経由のpresigned URLアップロード方式の実装（IAM権限・CORS設定は用意済み）
-- CI integration for tflint / checkov
-  tflint / checkovのCI組み込み
-  
+  S3経由のpresigned URLアップロード方式の実装（IAM権限・CORS設定は用意済み）  
