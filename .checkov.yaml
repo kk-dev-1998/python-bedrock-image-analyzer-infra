@@ -3,5 +3,7 @@ framework:
 directory:
   - environments/dev
   - modules
+skip-path:
+  - backend-bootstrap
 quiet: true
 compact: true
