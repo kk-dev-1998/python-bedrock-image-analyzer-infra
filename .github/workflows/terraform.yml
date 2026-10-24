@@ -67,7 +67,7 @@ jobs:
     name: Terraform fmt / plan / apply
     runs-on: ubuntu-latest
 
-    nees: [tflint, checkov]
+    needs: [tflint, checkov]
 
     steps:
       - name: Checkout
