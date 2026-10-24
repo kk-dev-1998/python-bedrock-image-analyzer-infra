@@ -6,6 +6,9 @@
 ########################################
 
 resource "aws_s3_bucket" "images" {
+  # checkov:skip=CKV2_AWS_62:Curretnly notification is not requierd in the flow. Confidential data should no be uploaded.
+  # checkov:skip=CKV_AWS_18,CKV_AWS_21,CKV_AWS_144,CKV_AWS_145:The data is temporary data and not confidential.
+
   bucket = var.bucket_name
 }
 
@@ -50,6 +53,10 @@ resource "aws_s3_bucket_lifecycle_configuration" "images" {
 
     expiration {
       days = var.expiration_days
+    }
+
+    abort_incomplete_multipart_upload {
+      days_after_initiation = 1 # Delete incomplete multipart uploads after 1 day
     }
   }
 }
