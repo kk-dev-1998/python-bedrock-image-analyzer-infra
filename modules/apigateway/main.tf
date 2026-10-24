@@ -18,6 +18,7 @@ resource "aws_apigatewayv2_integration" "lambda" {
 }
 
 resource "aws_apigatewayv2_route" "default" {
+  #checkov:skip=CKV_AWS_309:It is required in Production environment or businees purpose, but it makes difficult to test.
   api_id    = aws_apigatewayv2_api.this.id
   route_key = "$default"
   target    = "integrations/${aws_apigatewayv2_integration.lambda.id}"
@@ -39,9 +40,16 @@ resource "aws_apigatewayv2_stage" "default" {
       integrationErr = "$context.integrationErrorMessage"
     })
   }
+
+  default_route_settings {
+    throttling_rate_limit = var.throttling_rate_limit
+    throttling_burst_limit = var.throttling_burst_limit
+  }
 }
 
 resource "aws_cloudwatch_log_group" "access_logs" {
+  # checkov:skip=CKV_AWS_158:It is already encrypted by AWS managed Key. Logs should not contain confidential details.
+  # checkov:skip=CKV_AWS_338:It is required in Production enviroment.
   name              = "/aws/apigateway/${var.project_name}-${var.environment}"
   retention_in_days = var.log_retention_days
 }

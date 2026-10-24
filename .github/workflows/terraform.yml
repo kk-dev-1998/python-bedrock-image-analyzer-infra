@@ -6,12 +6,16 @@ on:
     paths:
       - "environments/dev/**"
       - "modules/**"
+      - ".tflint.hcl"
+      - ".checkov.yaml"
       - ".github/workflows/terraform.yml"
   push:
     branches: [main]
     paths:
       - "environments/dev/**"
       - "modules/**"
+      - ".tflint.hcl"
+      - ".checkov.yaml"
       - ".github/workflows/terraform.yml"
 
 # Only allow issuing OIDC tokens (id-token: write) and reading the repository (contents: read).
@@ -25,9 +29,45 @@ env:
   TF_WORKING_DIR: environments/dev
 
 jobs:
+  tflint:
+    name: tflint
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout
+      uses: actions/checkout@v4
+
+    - name: Setup tflint
+      uses: terraform-linters/setup-tflint@v4
+      with:
+        tflint_version: v0.64.0
+
+    - name: Init tflint plugins
+      run: tflint --init
+      env:
+        GITHUB_TOKEN: ${{ github.token }}
+
+    - name: Run tflint
+      run: tflint --recursive --config "$GITHUB_WORKSPACE/.tflint.hcl" --format compact
+
+  checkov:
+    name: checkov
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Run checkov
+        uses: bridgecrewip/checkov-action@v12
+        with:
+          config_file: .checkov.yaml
+
   terraform:
     name: Terraform fmt / plan / apply
     runs-on: ubuntu-latest
+
+    nees: [tflint, checkov]
 
     steps:
       - name: Checkout

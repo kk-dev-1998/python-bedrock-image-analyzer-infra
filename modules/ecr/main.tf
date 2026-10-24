@@ -8,6 +8,8 @@
 ########################################
 
 resource "aws_ecr_repository" "app" {
+  # checkov:skip=CKV_AWS_51:It is reuquired in Production or business purpose.
+  # checkov:skip=CKV_AWS_136:It is already encrypted by AWS managed Key. Images should not contain confidential details.
   name                 = var.repository_name
   image_tag_mutability = "MUTABLE" # Allow simple latest-tag usage for portfolio purposes
 
